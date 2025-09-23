@@ -8,17 +8,41 @@
   <xacro:arg name="ros2_control_type" default="open_manipulator_x_position" />
 
   <xacro:include filename="$(find open_manipulator_description)/gazebo/open_manipulator_x.gazebo.xacro" />
-
   <xacro:include filename="$(find open_manipulator_description)/urdf/open_manipulator_x/open_manipulator_x_arm.urdf.xacro" />
-
   <xacro:include filename="$(find open_manipulator_description)/ros2_control/$(arg ros2_control_type).ros2_control.xacro" />
 
   <link name="world"/>
 
-  <joint name="$(arg prefix)world_fixed" type="fixed">
-    <origin xyz="0 0 0" rpy="0 0 0"/>
+  <!-- base platform -->
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <mesh filename="package://open_manipulator_description/meshes/platform/joseph.dae" scale="1 1 1"/>
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://open_manipulator_description/meshes/platform/joseph.dae" scale="1 1 1"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="5.0"/>
+      <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.0"/>
+    </inertial>
+  </link>
+
+  <joint name="world_to_base" type="fixed">
     <parent link="world"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+  </joint>
+
+  <!-- Link OMX on top of the platform -->
+  <joint name="base_to_arm" type="fixed">
+    <parent link="base_link"/>
     <child link="$(arg prefix)link1"/>
+    <!-- Position OMX in the right spot on top of the platform -->
+    <origin xyz="0 -0.005 -0.1" rpy="-1.5708 -1.5708 0"/>
   </joint>
 
   <xacro:open_manipulator_x prefix="$(arg prefix)" />
