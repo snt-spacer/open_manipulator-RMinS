@@ -163,13 +163,6 @@
         </material>
       </visual>
 
-      <collision>
-        <origin xyz="0 0 0" rpy="0 0 0"/>
-        <geometry>
-          <mesh filename="${meshes_file_direction}/link5.stl" scale="0.001 0.001 0.001"/>
-        </geometry>
-      </collision>
-
        <inertial>
         <origin xyz="4.4206755e-02 3.6839985e-07 8.9142216e-03" />
         <mass value="1.4327573e-01" />
@@ -250,24 +243,6 @@
                  iyy="1.0e-06" iyz="0.0"
                  izz="1.0e-06" />
       </inertial>
-    </link>
-
-    <joint name="${prefix}end_effector_joint" type="fixed">
-      <parent link="${prefix}link5"/>
-      <child link="${prefix}end_effector_link"/>
-      <origin xyz="0.126 0.0 0.0" rpy="0 0 0"/>
-    </joint>
-
-    <link name="${prefix}end_effector_link">
-      <visual>
-        <origin xyz="0 0 0" rpy="0 0 0"/>
-        <geometry>
-          <box size="0.01 0.01 0.01" />
-        </geometry>
-        <material name="red">
-          <color rgba="1.0 0.0 0.0 1"/>
-        </material>
-      </visual>
     </link>
 
   </xacro:macro>
