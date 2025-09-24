@@ -4,6 +4,24 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 CONTAINER_NAME="open_manipulator"
 
+detect_nvidia_gpu() {
+    if command -v nvidia-smi &> /dev/null; then
+        if nvidia-smi > /dev/null 2>&1; then
+            echo "NVIDIA GPU detected" >&2 
+            return 0
+        fi
+    fi
+    echo "No NVIDIA GPU detected, proceeding with general configuration." >&2
+    return 1
+}
+get_compose_file() {
+    if detect_nvidia_gpu; then
+        echo "${SCRIPT_DIR}/docker-compose.yml"
+    else
+        echo "${SCRIPT_DIR}/docker-compose-general.yml"
+    fi
+}
+
 # Function to display help
 show_help() {
     echo "Usage: $0 [command]"
@@ -40,11 +58,13 @@ start_container() {
     sudo udevadm control --reload-rules
     sudo udevadm trigger
 
+    COMPOSE_FILE=$(get_compose_file)
+
     # Pull the latest images
-    docker compose -f "${SCRIPT_DIR}/docker-compose.yml" pull
+    docker compose -f "$COMPOSE_FILE" pull
 
     # Run docker-compose
-    docker compose -f "${SCRIPT_DIR}/docker-compose.yml" up -d
+    docker compose -f "$COMPOSE_FILE" up -d
 }
 
 # Function to enter the container
@@ -75,7 +95,9 @@ stop_container() {
     read -p "Are you sure you want to continue? [y/N] " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        docker compose -f "${SCRIPT_DIR}/docker-compose.yml" down
+        COMPOSE_FILE=$(get_compose_file)
+        echo "Using compose file: $(basename "$COMPOSE_FILE")"
+        docker compose -f "$COMPOSE_FILE" down
     else
         echo "Operation cancelled."
         exit 0
