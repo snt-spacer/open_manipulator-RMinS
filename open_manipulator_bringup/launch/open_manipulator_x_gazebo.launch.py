@@ -95,7 +95,7 @@ def generate_launch_description():
             '-string', robot_desc,
             '-x',   '0.0',
             '-y',   '0.0',
-            '-z',   '0.0612',  # OMX sits on top of the platform
+            '-z',   '0.07',  # OMX sits on top of the platform
             '-R',   '0.0',
             '-P',   '0.0',
             '-Y',   '0.0',
@@ -104,6 +104,39 @@ def generate_launch_description():
             '-use_sim',         'true',
         ],
     )
+
+    # Define a cylinder SDF to spawn directly with Gazebo
+    # cylinder_sdf = f'''
+    # <?xml version="1.0"?>
+    # <sdf version="1.6">
+    #   <model name="cylinder_0">
+    #     <pose> -0.10 -0.21 0.10 0 0 0</pose>
+    #     <link name="link">
+    #       <collision name="collision">
+    #         <geometry>
+    #           <cylinder>
+    #             <radius>0.01</radius>
+    #             <length>0.05</length>
+    #           </cylinder>
+    #         </geometry>
+    #       </collision>
+    #       <visual name="visual">
+    #         <geometry>
+    #           <cylinder>
+    #             <radius>0.012</radius>
+    #             <length>0.05</length>
+    #           </cylinder>
+    #         </geometry>
+    #         <material>
+    #           <ambient>0.8 0.3 0.3 1</ambient>
+    #           <diffuse>0.8 0.3 0.3 1</diffuse>
+    #           <specular>0.5 0.5 0.5 1</specular>
+    #         </material>
+    #       </visual>
+    #     </link>
+    #   </model>
+    # </sdf>
+    # '''
 
     # Controller spawner nodes
     joint_state_broadcaster_spawner = Node(
@@ -138,6 +171,23 @@ def generate_launch_description():
         output='screen',
     )
 
+    # gz_spawn_cylinder_direct = Node(
+    #     package='ros_gz_sim',
+    #     executable='create',
+    #     output='screen',
+    #     arguments=[
+    #         '-string', cylinder_sdf,
+    #         '-x', '-0.10',
+    #         '-y', '-0.21', 
+    #         '-z', '0.10',
+    #         '-R', '0.0',
+    #         '-P', '0.0',
+    #         '-Y', '0.0',
+    #         '-name', 'student_cylinder_001',
+    #         '-allow_renaming', 'false',
+    #     ],
+    # )
+
     # rviz_config_file = os.path.join(
     #     open_manipulator_description_path, 'rviz', 'open_manipulator.rviz'
     # )
@@ -169,5 +219,5 @@ def generate_launch_description():
         gazebo,
         node_robot_state_publisher,
         gz_spawn_entity,
-        # rviz,
+        # gz_spawn_cylinder_direct
     ])

@@ -42,7 +42,7 @@
     <parent link="base_link"/>
     <child link="$(arg prefix)link1"/>
     <!-- Position OMX in the right spot on top of the platform -->
-    <origin xyz="0 -0.005 -0.1" rpy="-1.5708 -1.5708 0"/>
+    <origin xyz="0 0.011 -0.1" rpy="-1.5708 -1.5708 0"/>
   </joint>
 
   <xacro:open_manipulator_x prefix="$(arg prefix)" />
