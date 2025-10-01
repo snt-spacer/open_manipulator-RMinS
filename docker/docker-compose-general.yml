@@ -17,26 +17,11 @@ services:
     environment:
      - DISPLAY=${DISPLAY}
      - QT_X11_NO_MITSHM=1
-      - NVIDIA_DRIVER_CAPABILITIES=all
-      - NVIDIA_VISIBLE_DEVICES=all
-      - __GLX_VENDOR_LIBRARY_NAME=nvidia 
-      - XAUTHORITY=/tmp/.docker.xauth
-      - GZ_GPU=1  # Hardware accelerated Gazebo
-
     volumes:
       - /dev:/dev
       - ./workspace:/workspace
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
       - ../:/root/ros2_ws/src/open_manipulator/
-      - /usr/lib/nvidia:/usr/lib/nvidia:ro  # Mount NVIDIA libraries
-
     privileged: true
     command: bash
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu, compute, utility, graphics]
