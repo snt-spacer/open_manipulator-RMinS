@@ -1,6 +1,12 @@
 # Robotics and Manipulation II (2026)
 
+
 ## 🐋 Docker Environment Setup
+### Pre-requirements
+It is necessary to run docker without sudo, run this command if it has not yet been done, log out and back in to proceed. 
+```bash
+sudo usermod -aG docker $USER
+```
 
 ### First Time Setup
 ```bash
