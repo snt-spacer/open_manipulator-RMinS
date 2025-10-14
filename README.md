@@ -7,6 +7,10 @@ It is necessary to run docker without sudo, run this command if it has not yet b
 ```bash
 sudo usermod -aG docker $USER
 ```
+Then, git clone this repo. 
+```bash
+git clone https://github.com/snt-spacer/open_manipulator-RMinS.git
+```
 
 ### First Time Setup
 ```bash
