@@ -39,6 +39,11 @@ def demo_solution(robot):
     # Clear any existing objects in the scene and detach any objects from the gripper
     robot.detach_all()
 
+    robot.open_gripper()
+    robot.wait(1)
+    robot.close_gripper()
+    robot.wait(1)
+    robot.set_gripper_position(0.005)  # Set gripper to a specific width
 
     # Step 1: Spawn the peg (cylinder)
     robot.get_logger().info("Step 1: Spawning the peg...")
@@ -91,7 +96,7 @@ def main():
     
     try:
         robot = PegInHole()
-        robot.wait(3)
+        robot.wait(2)
         
         demo_solution(robot)
         

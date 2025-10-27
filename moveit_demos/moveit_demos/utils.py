@@ -11,6 +11,8 @@ from shape_msgs.msg import SolidPrimitive
 
 # MoveIt action interfaces
 from moveit_msgs.action import MoveGroup
+from control_msgs.action import GripperCommand
+from control_msgs.msg import GripperCommand as GripperCommandMsg
 
 class PegInHole(Node):
     def __init__(self):
@@ -20,6 +22,7 @@ class PegInHole(Node):
         
         self.collision_publisher = self.create_publisher(CollisionObject, '/collision_object', 10)
         self.attached_publisher = self.create_publisher(AttachedCollisionObject, '/attached_collision_object', 10)
+        self.gripper_action_client = ActionClient(self, GripperCommand, '/gripper_controller/gripper_cmd')
         
         self.move_action_client = ActionClient(self, MoveGroup, '/move_action')
         
@@ -29,6 +32,10 @@ class PegInHole(Node):
         
         self.get_logger().info("Available functions:")
         self.get_logger().info(" - move_gripper_to(x, y, z)")
+        self.get_logger().info(" - move_gripper_joints(joint_1, joint_2, joint_3, joint_4)")
+        self.get_logger().info(" - open_gripper()")
+        self.get_logger().info(" - close_gripper()")
+        self.get_logger().info(" - set_gripper_position(position)")
         self.get_logger().info(" - spawn_cylinder(name, x, y, z)")
         self.get_logger().info(" - spawn_cube(name, x, y, z)")
         self.get_logger().info(" - attach_to_gripper(object_name)")
@@ -75,7 +82,8 @@ class PegInHole(Node):
                 
                 # Send goal
                 future = self.move_action_client.send_goal_async(goal_msg)
-                self.wait(2)  # Wait for planning and execution
+                while not future.done():
+                    rclpy.spin_once(self)
                 
                 self.get_logger().info(f"✅ Moved gripper to: ({x:.3f}, {y:.3f}, {z:.3f})")
                 return True
@@ -119,7 +127,8 @@ class PegInHole(Node):
             goal_msg.request.goal_constraints.append(constraints)
             
             future = self.move_action_client.send_goal_async(goal_msg)
-            self.wait(2)
+            while not future.done():
+                rclpy.spin_once(self)
             
             self.get_logger().info(f"✅ Moved joints to: [{joint1:.1f}°, {joint2:.1f}°, {joint3:.1f}°, {joint4:.1f}°]")
             return True
@@ -127,7 +136,80 @@ class PegInHole(Node):
         except Exception as e:
             self.get_logger().error(f"❌ Failed to move joints: {e}")
             return False
+        
+    def open_gripper(self):
+        """Open gripper fully"""
+        try:
+            from control_msgs.msg import GripperCommand as GripperCommandMsg
+            
+            goal_msg = GripperCommand.Goal()
+            goal_msg.command = GripperCommandMsg()
+            goal_msg.command.position = 0.02    
+            goal_msg.command.max_effort = 5.0  
+            
+            future = self.gripper_action_client.send_goal_async(goal_msg)
+            while not future.done():
+                rclpy.spin_once(self)
+            
+            self.get_logger().info("✅ Gripper opened")
+            return True
+            
+        except Exception as e:
+            self.get_logger().error(f"❌ Failed to open gripper: {e}")
+            return False
 
+    def close_gripper(self):
+        """Close gripper fully"""
+        try:
+            
+            goal_msg = GripperCommand.Goal()
+            goal_msg.command = GripperCommandMsg()
+            goal_msg.command.position = -0.011     
+            goal_msg.command.max_effort = 10.0   
+            
+            future = self.gripper_action_client.send_goal_async(goal_msg)
+            while not future.done():
+                rclpy.spin_once(self)
+
+            self.get_logger().info(f"✅ Gripper closed successfully")
+            return True
+            
+        except Exception as e:
+            self.get_logger().error(f"❌ Failed to close gripper: {e}")
+            return False
+
+    def set_gripper_position(self, position, max_effort=10.0):
+        """
+        Set gripper to a specific position.
+        The range is -0.011 (closed) to 0.02 (open)
+        
+        Args:
+            position: Target position (0.0 = closed, max_value = open)
+            max_effort: Maximum effort to apply
+        """
+        try:
+            from control_msgs.action import GripperCommand
+            from control_msgs.msg import GripperCommand as GripperCommandMsg
+            
+            goal_msg = GripperCommand.Goal()
+            goal_msg.command = GripperCommandMsg()
+            goal_msg.command.position = float(position)
+            goal_msg.command.max_effort = float(max_effort)
+
+            if position < -0.011 or position > 0.02:
+                raise ValueError("Position must be between -0.011 (closed) and 0.02 (open)")
+            
+            future = self.gripper_action_client.send_goal_async(goal_msg)
+            while not future.done():
+                rclpy.spin_once(self)
+            
+            self.get_logger().info(f"✅ Gripper set to position: {position}")
+            return True
+            
+        except Exception as e:
+            self.get_logger().error(f"❌ Failed to set gripper position: {e}")
+            return False
+        
     def spawn_cylinder(self, name, x, y, z, radius=0.012, height=0.05):
         """
         Spawn a cylinder in the planning scene
