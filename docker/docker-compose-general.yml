@@ -1,27 +1,39 @@
+name: open-manipulator-rmins
+
 services:
   open_manipulator:
     container_name: open_manipulator
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile
     image: robotis/open-manipulator:latest
+    init: true
     tty: true
-    restart: always
     cap_add:
       - SYS_NICE
     ulimits:
       rtprio: 99
       rttime: -1
-      memlock: 8428281856
+      memlock: -1
     network_mode: host
+    ipc: host
     environment:
-     - DISPLAY=${DISPLAY}
-     - QT_X11_NO_MITSHM=1
+      DISPLAY: ${DISPLAY:-}
+      ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-30}
+      QT_X11_NO_MITSHM: "1"
+      XAUTHORITY: /tmp/.docker.xauth
+      GZ_GPU: "0"
     volumes:
       - /dev:/dev
-      - ./workspace:/workspace
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+      - type: bind
+        source: ${OPEN_MANIPULATOR_XAUTH:-/dev/null}
+        target: /tmp/.docker.xauth
+        read_only: true
+      - open_manipulator_bash_history:/root/.open_manipulator_history
       - ../:/root/ros2_ws/src/open_manipulator/
     privileged: true
     command: bash
+
+volumes:
+  open_manipulator_bash_history:
