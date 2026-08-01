@@ -14,10 +14,14 @@
   <author email="ywh@robotis.com">Wonho Yun</author>
   <author email="wwj@robotis.com">Woojin Wie</author>
   <depend>rclpy</depend>
+  <depend>action_msgs</depend>
+  <depend>control_msgs</depend>
   <depend>dynamixel_hardware_interface</depend>
   <depend>ros_gz_bridge</depend>
   <depend>ros_gz_sim</depend>
   <depend>ros_gz_image</depend>
+  <depend>sensor_msgs</depend>
+  <depend>trajectory_msgs</depend>
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>gz_ros2_control</exec_depend>
   <exec_depend>ros2_control</exec_depend>
