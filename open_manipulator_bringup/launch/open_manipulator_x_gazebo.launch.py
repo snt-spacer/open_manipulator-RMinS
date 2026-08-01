@@ -25,9 +25,11 @@ from launch.actions import DeclareLaunchArgument
 from launch.actions import IncludeLaunchDescription
 from launch.actions import RegisterEventHandler
 from launch.actions import SetEnvironmentVariable
+from launch.conditions import IfCondition
 from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
+from launch.substitutions import PythonExpression
 from launch_ros.actions import Node
 import xacro
 
@@ -55,7 +57,23 @@ def generate_launch_description():
         DeclareLaunchArgument(
             'world', default_value='empty_world', description='Gz sim World'
         ),
+        DeclareLaunchArgument(
+            'start_rviz', default_value='false', description='Whether to execute rviz2'
+        ),
+        DeclareLaunchArgument(
+            'use_sim_time',
+            default_value='true',
+            description='Whether launched ROS nodes use the Gazebo simulation clock',
+        ),
+        DeclareLaunchArgument(
+            'headless',
+            default_value='false',
+            description='Run Gazebo server without the GUI client',
+        ),
     ])
+    start_rviz = LaunchConfiguration('start_rviz')
+    use_sim_time = LaunchConfiguration('use_sim_time')
+    headless = LaunchConfiguration('headless')
 
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
@@ -63,7 +81,16 @@ def generate_launch_description():
             '/gz_sim.launch.py',
         ]),
         launch_arguments=[
-            ('gz_args', [LaunchConfiguration('world'), '.sdf', ' -v 1', ' -r'])
+            (
+                'gz_args',
+                [
+                    LaunchConfiguration('world'),
+                    '.sdf',
+                    ' -v 1',
+                    ' -r',
+                    PythonExpression(["' -s' if '", headless, "' == 'true' else ''"]),
+                ],
+            )
         ],
     )
 
@@ -84,7 +111,7 @@ def generate_launch_description():
         package='robot_state_publisher',
         executable='robot_state_publisher',
         output='screen',
-        parameters=[params],
+        parameters=[params, {'use_sim_time': use_sim_time}],
     )
 
     gz_spawn_entity = Node(
@@ -178,7 +205,7 @@ def generate_launch_description():
     #     arguments=[
     #         '-string', cylinder_sdf,
     #         '-x', '-0.10',
-    #         '-y', '-0.21', 
+    #         '-y', '-0.21',
     #         '-z', '0.10',
     #         '-R', '0.0',
     #         '-P', '0.0',
@@ -188,17 +215,19 @@ def generate_launch_description():
     #     ],
     # )
 
-    # rviz_config_file = os.path.join(
-    #     open_manipulator_description_path, 'rviz', 'open_manipulator.rviz'
-    # )
+    rviz_config_file = os.path.join(
+        open_manipulator_description_path, 'rviz', 'open_manipulator.rviz'
+    )
 
-    # rviz = Node(
-    #     package='rviz2',
-    #     executable='rviz2',
-    #     name='rviz2',
-    #     output='log',
-    #     arguments=['-d', rviz_config_file],
-    # )
+    rviz = Node(
+        package='rviz2',
+        executable='rviz2',
+        condition=IfCondition(start_rviz),
+        name='rviz2',
+        output='log',
+        arguments=['-d', rviz_config_file],
+        parameters=[{'use_sim_time': use_sim_time}],
+    )
 
     return LaunchDescription([
         RegisterEventHandler(
@@ -218,6 +247,7 @@ def generate_launch_description():
         arguments,
         gazebo,
         node_robot_state_publisher,
+        rviz,
         gz_spawn_entity,
         # gz_spawn_cylinder_direct
     ])
