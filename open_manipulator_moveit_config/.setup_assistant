@@ -1,0 +1,6 @@
+moveit_setup_assistant_config:
+  urdf:
+    package: open_manipulator_description
+    relative_path: urdf/open_manipulator_x/open_manipulator_x.urdf.xacro
+  srdf:
+    relative_path: config/open_manipulator_x/open_manipulator_x.srdf
