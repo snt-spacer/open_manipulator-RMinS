@@ -175,7 +175,7 @@ start_container() {
 
     COMPOSE_FILE=$(get_compose_file)
 
-    docker compose -f "$COMPOSE_FILE" up -d # --build
+    docker compose -f "$COMPOSE_FILE" up -d --build
     echo "Container ready. Source workspace is already built and sourced."
 }
 
